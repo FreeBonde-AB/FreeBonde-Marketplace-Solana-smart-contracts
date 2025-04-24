@@ -6,7 +6,7 @@
 
 ## Project Overview
 
-FreeBonde Marketplace is a decentralized marketplace built on the Solana blockchain, designed to facilitate the secure and efficient exchange of digital and physical assets. This project is being developed as a submission for the Solana hackathon.
+FreeBonde Marketplace is a decentralized marketplace built on the Solana blockchain, designed to facilitate the secure and efficient exchange of digital and physical assets.
 
 ## Key Features
 
