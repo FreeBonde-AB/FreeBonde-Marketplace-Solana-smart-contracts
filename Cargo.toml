@@ -1,0 +1,7 @@
+[workspace]
+members = [
+    "programs/my_solana_project"
+]
+
+[profile.release]
+overflow-checks = true

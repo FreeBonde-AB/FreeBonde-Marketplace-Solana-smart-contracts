@@ -1,0 +1,14 @@
+[package]
+name = "my_solana_project"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "my_solana_project"
+crate-type = ["cdylib", "lib"]
+
+[dependencies]
+anchor-lang = "0.29.0"
+
+[features]
+idl-build = ["anchor-lang/idl-build"]

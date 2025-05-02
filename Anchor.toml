@@ -1,0 +1,13 @@
+[programs.localnet]
+my_solana_project = "CSfhQDbtBf7qtBr4qgnSrbGxLB3LU1PSYBcLyEcCh3Zj"
+
+[provider]
+cluster = "localnet"
+wallet = "~/.config/solana/id.json"
+
+[scripts]
+test = "mocha -t 1000000 tests/"
+
+
+[toolchain]
+anchor_version = "0.29.0"
