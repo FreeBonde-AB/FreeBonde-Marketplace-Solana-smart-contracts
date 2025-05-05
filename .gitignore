@@ -35,3 +35,6 @@ wallet.json
 .idea/
 *.swp
 *.swo
+
+# Test files
+**/test-ledger/
