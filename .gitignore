@@ -22,7 +22,6 @@ Cargo.lock
 .solana/
 
 # Secrets and keys
-*.json
 *.key
 *.pem
 id.json
