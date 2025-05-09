@@ -1,0 +1,59 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+bower_components
+/.pnp
+.pnp.js
+
+# testing
+/coverage
+
+# production
+/build
+dist/
+
+# misc
+.DS_Store
+.cache/
+
+# env files
+.env
+.env.development
+.env.production
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# code editor
+.vscode/*
+.vscode
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+*.sublime*
+.history
+.ionide
+.idea/
+
+# npm
+npm-debug.log*
+package-lock.json
+
+# yarn
+yarn-debug.log*
+yarn-error.log*
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+
+# deployment 
+.vercel
+netlify.toml
+
+
+
