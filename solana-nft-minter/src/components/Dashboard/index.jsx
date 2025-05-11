@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { Metaplex } from "@metaplex-foundation/js";
+import { Metaplex, walletAdapterIdentity } from "@metaplex-foundation/js";
 import { Connection, clusterApiUrl } from "@solana/web3.js";
 import { faker } from "@faker-js/faker";
+import { toast } from "react-hot-toast";
 import PlantCard from "../PlantCard";
 import plantImage1 from "../../assets/plant_images/sample_plant_1.jpg";
 import plantImage2 from "../../assets/plant_images/sample_plant_2.jpg";
@@ -51,6 +52,7 @@ const Dashboard = () => {
 
     // Hooks
     const { publicKey } = useWallet();
+    const wallet = useWallet();
 
     const handleGenerate = () => {
         setPlantData(generatePlantData());
@@ -65,11 +67,19 @@ const Dashboard = () => {
     const mintNFT = async () => {
         try {
             if (!plantData) {
-                throw new Error("No plant data available!");
+                toast.error("Please generate plant data first.");
+                return;
+            }
+
+            if (!wallet.connected) {
+                toast.error("Please connect your wallet first.");
+                return;
             }
 
             const connection = new Connection(clusterApiUrl("devnet"));
-            const metaplex = new Metaplex(connection);
+            const metaplex = new Metaplex(connection).use(
+                walletAdapterIdentity(wallet)
+            );
 
             // Upload image to Arweave
             const imageUrl = uploadToArweave(plantData.data.plant_image);
@@ -119,8 +129,12 @@ const Dashboard = () => {
                 symbol: metadata.symbol,
             });
 
+            toast.success("NFT created successfully!");
             console.log("NFT created:", nft);
         } catch (error) {
+            toast.error(
+                `Error minting NFT: ${error.message || error.toString()}`
+            );
             console.error("Error minting NFT:", error);
         }
     };
@@ -144,10 +158,15 @@ const Dashboard = () => {
   bg-black hover:shadow-[0_0_15px_#39ff14] transition-all duration-300 
   before:absolute before:inset-0 before:rounded-md before:border before:border-neonGreen before:animate-pulse before:opacity-30 before:pointer-events-none"
                     onClick={mintNFT}
-                    disabled={!publicKey}
+                    hidden={!wallet.connected}
                 >
                     Create Plant NFT
                 </button>
+            )}
+            {!wallet.connected && (
+                <p className="mt-4 text-red-500">
+                    Please connect your wallet first to mint the NFT.
+                </p>
             )}
         </div>
     );
