@@ -3,6 +3,7 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 
 const TopBar = () => {
+    // Hooks
     const { connected } = useWallet();
     const { setVisible } = useWalletModal();
 

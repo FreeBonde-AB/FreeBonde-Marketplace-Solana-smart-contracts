@@ -1,10 +1,12 @@
-// SideBar.jsx
-import React, { useState } from "react";
+import { useState } from "react";
 import { FaBars, FaHome } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
 const SideBar = () => {
+    // States
     const [collapsed, setCollapsed] = useState(false);
+
+    // Router
     const navigate = useNavigate();
 
     return (

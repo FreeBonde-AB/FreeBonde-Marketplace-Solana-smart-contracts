@@ -12,12 +12,12 @@ import plantImage5 from "../../assets/plant_images/sample_plant_5.jpeg";
 
 const stages = ["mature_plant", "sprout", "seed", "flowering", "fruiting"];
 
-function getRandomInt(min, max) {
+const getRandomInt = (min, max) => {
     return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-function getRandomFloat(min, max, decimals = 2) {
+};
+const getRandomFloat = (min, max, decimals = 2) => {
     return (Math.random() * (max - min) + min).toFixed(decimals);
-}
+};
 
 const PLANT_IMAGES = [
     plantImage1,
@@ -27,10 +27,10 @@ const PLANT_IMAGES = [
     plantImage5,
 ];
 
-function getRandomPlantImage() {
+const getRandomPlantImage = () => {
     const idx = Math.floor(Math.random() * PLANT_IMAGES.length);
     return PLANT_IMAGES[idx];
-}
+};
 
 const generatePlantData = () => ({
     plant_id: faker.string.nanoid(),
@@ -46,8 +46,10 @@ const generatePlantData = () => ({
 });
 
 const Dashboard = () => {
+    // States
     const [plantData, setPlantData] = useState(null);
 
+    // Hooks
     const { publicKey } = useWallet();
 
     const handleGenerate = () => {
