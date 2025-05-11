@@ -12,10 +12,6 @@ const MainComponent = () => {
             <h1>Solana NFT Minter</h1>
             <WalletConnection />
             <NFTMinter />
-
-            
-
-
         </div>
     );
 };
