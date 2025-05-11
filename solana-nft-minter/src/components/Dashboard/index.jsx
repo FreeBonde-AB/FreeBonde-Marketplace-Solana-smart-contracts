@@ -1,6 +1,9 @@
-import React, { useState } from "react";
-import PlantCard from "../PlantCard";
+import { useState } from "react";
+import { useWallet } from "@solana/wallet-adapter-react";
+import { Metaplex } from "@metaplex-foundation/js";
+import { Connection, clusterApiUrl } from "@solana/web3.js";
 import { faker } from "@faker-js/faker";
+import PlantCard from "../PlantCard";
 import plantImage1 from "../../assets/plant_images/sample_plant_1.jpg";
 import plantImage2 from "../../assets/plant_images/sample_plant_2.jpg";
 import plantImage3 from "../../assets/plant_images/sample_plant_3.png";
@@ -45,8 +48,79 @@ const generatePlantData = () => ({
 const Dashboard = () => {
     const [plantData, setPlantData] = useState(null);
 
+    const { publicKey } = useWallet();
+
     const handleGenerate = () => {
         setPlantData(generatePlantData());
+    };
+
+    const uploadToArweave = (image) => {
+        return image;
+    };
+
+    const uploadMetadataToArweave = async (metadata) => {};
+
+    const mintNFT = async () => {
+        try {
+            if (!plantData) {
+                throw new Error("No plant data available!");
+            }
+
+            const connection = new Connection(clusterApiUrl("devnet"));
+            const metaplex = new Metaplex(connection);
+
+            // Upload image to Arweave
+            const imageUrl = uploadToArweave(plantData.data.plant_image);
+
+            // 2. Prepare metadata object
+            const metadata = {
+                name: `Plant #${plantData.plant_id}`,
+                symbol: "PLANT",
+                description: `A unique plant NFT at the ${plantData.stage} stage.`,
+                image: imageUrl,
+                attributes: [
+                    { trait_type: "Plant Type", value: plantData.plant_type },
+                    { trait_type: "Stage", value: plantData.stage },
+                    {
+                        trait_type: "Temperature",
+                        value: plantData.data.temperature,
+                    },
+                    { trait_type: "Humidity", value: plantData.data.humidity },
+                    { trait_type: "pH", value: plantData.data.ph },
+                    { trait_type: "EC", value: plantData.data.ec },
+                ],
+                properties: {
+                    files: [
+                        {
+                            uri: imageUrl,
+                            type: "image/jpeg", // or "image/png" depending on your image
+                        },
+                    ],
+                    category: "image",
+                    creators: [
+                        {
+                            address: publicKey?.toBase58() || "",
+                            share: 100,
+                        },
+                    ],
+                },
+            };
+
+            // 3. Upload metadata JSON to Arweave
+            // const metadataUrl = await uploadMetadataToArweave(metadata);
+
+            // Create NFT metadata
+            const { nft } = await metaplex.nfts().create({
+                uri: `${imageUrl}`,
+                name: metadata.name,
+                sellerFeeBasisPoints: 500, // 5%
+                symbol: metadata.symbol,
+            });
+
+            console.log("NFT created:", nft);
+        } catch (error) {
+            console.error("Error minting NFT:", error);
+        }
     };
 
     return (
@@ -67,6 +141,8 @@ const Dashboard = () => {
                     className="relative inline-block mt-4 px-6 py-3 border border-neonGreen rounded-md uppercase font-bold tracking-widest 
   bg-black hover:shadow-[0_0_15px_#39ff14] transition-all duration-300 
   before:absolute before:inset-0 before:rounded-md before:border before:border-neonGreen before:animate-pulse before:opacity-30 before:pointer-events-none"
+                    onClick={mintNFT}
+                    disabled={!publicKey}
                 >
                     Create Plant NFT
                 </button>

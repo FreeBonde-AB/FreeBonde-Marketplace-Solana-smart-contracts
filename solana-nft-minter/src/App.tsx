@@ -10,6 +10,7 @@ import MainComponent from "./components/MainComponent";
 import TopBar from "./components/TopBar";
 import SideBar from "./components/SideBar";
 import Dashboard from "./components/Dashboard";
+import '@solana/wallet-adapter-react-ui/styles.css';
 
 const App = () => {
     const endpoint = clusterApiUrl("devnet");

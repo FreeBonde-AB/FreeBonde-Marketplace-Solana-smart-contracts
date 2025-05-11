@@ -34,7 +34,7 @@ const NFTMinter = () => {
 
             // Create NFT metadata
             const { nft } = await metaplex.nfts().create({
-                uri: imageUrl,
+                uri: `${imageUrl}`,
                 name: metadata.name,
                 sellerFeeBasisPoints: 500, // 5%
                 symbol: metadata.symbol,
