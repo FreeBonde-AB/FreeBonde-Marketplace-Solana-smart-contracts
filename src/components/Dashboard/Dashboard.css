@@ -1,0 +1,31 @@
+/* styles for Dashboard component */
+
+/* Styling for the container of the Dashboard section */
+.dashboard-section-container {
+    /* background-color: #006AA7; Swedish flag blue */
+    padding: 20px; /* Add some padding */
+    /* Add other styling as needed for the "Dashboard栏目" box */
+}
+
+/* Styling for the container holding the buttons and wallet message */
+.dashboard-buttons-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-top: 30px; /* Add spacing from elements above */
+}
+
+button {
+    margin: 10px 0; /* Add vertical margin around buttons */
+}
+
+.generate-button,
+.mint-button {
+  /* Add your specific button styles here if needed, or override generic button styles */
+  /* For example: */
+  /* background-color: lightgreen; Green background */
+  /* color: white; White text */
+  background-color: #E0E0E0; /* Light gray background */
+  color: #000000; /* Black text */
+}

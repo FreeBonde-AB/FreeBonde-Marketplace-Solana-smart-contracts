@@ -28,7 +28,7 @@ const SideBar = () => {
             <nav className="flex-1 flex flex-col items-center">
                 <button
                     className={`flex items-center w-full px-4 py-3 text-lg font-medium transition hover:bg-gray-700 ${
-                        collapsed ? "justify-center" : ""
+                        collapsed ? "justify-center bg-gray-200 hover:bg-gray-300 text-black" : "bg-gray-200 hover:bg-gray-300 text-black"
                     }`}
                     onClick={() => navigate("/")}
                 >
