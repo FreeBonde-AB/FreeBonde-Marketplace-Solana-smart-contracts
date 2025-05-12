@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { Metaplex, walletAdapterIdentity } from "@metaplex-foundation/js";
 import { Connection, clusterApiUrl } from "@solana/web3.js";
@@ -10,6 +10,7 @@ import plantImage2 from "../../assets/plant_images/sample_plant_2.jpg";
 import plantImage3 from "../../assets/plant_images/sample_plant_3.png";
 import plantImage4 from "../../assets/plant_images/sample_plant_4.jpg";
 import plantImage5 from "../../assets/plant_images/sample_plant_5.jpeg";
+import { useFreeBondeBalance } from "../../FreeBondeBalanceContext";
 import "./Dashboard.css"; // Import the CSS file for Dashboard styles
 
 const stages = ["mature_plant", "sprout", "seed", "flowering", "fruiting"];
@@ -38,19 +39,23 @@ const getRandomPlantImage = () => {
 const Dashboard = () => {
     // States
     const [plantData, setPlantData] = useState(null);
+    // Use context for freeBondeBalance
+    const { freeBondeBalance, setFreeBondeBalance } = useFreeBondeBalance();
+
+    const generateFreeBonde = () => {
+ setFreeBondeBalance(prevBalance => prevBalance + 100);};
+    // Automatically generate plant data on component mount
+    useEffect(() => {
+        handleGenerate();
+    }, []);
 
     // Hooks
     const { publicKey } = useWallet();
     const wallet = useWallet();
 
-    // Automatically generate data on component mount
-    useEffect(() => {
-        handleGenerate();
-    }, []); // Empty dependency array means this effect runs only once after the initial render
-
     const handleGenerate = () => {
         setPlantData(generatePlantData());
-    };
+ };
 
     const uploadToArweave = (image) => {
         return image;
@@ -169,6 +174,12 @@ const Dashboard = () => {
  return (
     <div className="dashboard-section-container"> {/* Container for the Dashboard section */}
       <div className="dashboard-buttons-container"> {/* Container for all content */}
+
+        <p>FreeBonde Balance: {freeBondeBalance}</p>
+        <button onClick={generateFreeBonde} className="generate-button">
+            Generate FreeBonde
+        </button>
+
           {plantData && <PlantCard data={plantData} />}
 
           <button onClick={handleGenerate} className="generate-button">
@@ -188,4 +199,3 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
-

@@ -25,15 +25,24 @@ const SideBar = () => {
             </button>
 
             {/* Sidebar Content */}
-            <nav className="flex-1 flex flex-col items-center">
+            <nav className="flex-1 flex flex-col items-center py-4">
                 <button
                     className={`flex items-center w-full px-4 py-3 text-lg font-medium transition hover:bg-gray-700 ${
                         collapsed ? "justify-center bg-gray-200 hover:bg-gray-300 text-black" : "bg-gray-200 hover:bg-gray-300 text-black"
                     }`}
                     onClick={() => navigate("/")}
                 >
-                    <FaHome className="text-xl" />
+ <FaHome className="text-xl" />
                     {!collapsed && <span className="ml-4">Dashboard</span>}
+                </button>
+                <button
+                    className={`flex items-center w-full px-4 py-3 text-lg font-medium transition ${
+                        collapsed ? "justify-center hover:bg-gray-300 text-black" : "hover:bg-gray-300 text-black"
+                    }`}
+                    onClick={() => navigate('/my-nfts')}
+                >
+ {/* Add a relevant icon for My NFTs if available, or remove FaHome if not needed for this button */}
+                    {!collapsed && <span className="ml-4">My NFTs</span>}
                 </button>
             </nav>
         </div>
