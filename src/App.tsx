@@ -9,8 +9,9 @@ import { clusterApiUrl } from "@solana/web3.js";
 import TopBar from "./components/TopBar";
 import SideBar from "./components/SideBar";
 import Dashboard from "./components/Dashboard";
-import { FreeBondeBalanceProvider } from "./FreeBondeBalanceContext"; // Import the Provider
-import MyNFTsPage from "./pages/MyNFTsPage"; // Import MyNFTsPage
+import { FreeBondeBalanceProvider } from "./FreeBondeBalanceContext";
+import MyNFTsPage from "./pages/MyNFTsPage";
+import MarketplacePage from "./pages/MarketplacePage";
 import "@solana/wallet-adapter-react-ui/styles.css";
 import { Toaster } from "react-hot-toast";
 
@@ -34,6 +35,7 @@ const App = () => {
                       <Routes>
                         <Route path="/" element={<Dashboard />} />
                         <Route path="/my-nfts" element={<MyNFTsPage />} />
+                        <Route path="/marketplace" element={<MarketplacePage />} />
                       </Routes>
                     </main>
                   </div>

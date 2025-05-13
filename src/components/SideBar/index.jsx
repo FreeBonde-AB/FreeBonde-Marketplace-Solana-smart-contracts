@@ -44,6 +44,15 @@ const SideBar = () => {
  {/* Add a relevant icon for My NFTs if available, or remove FaHome if not needed for this button */}
                     {!collapsed && <span className="ml-4">My NFTs</span>}
                 </button>
+                {/* 新增Marketplace入口 */}
+                <button
+                    className={`flex items-center w-full px-4 py-3 text-lg font-medium transition ${
+                        collapsed ? "justify-center hover:bg-gray-300 text-black" : "hover:bg-gray-300 text-black"
+                    }`}
+                    onClick={() => navigate('/marketplace')}
+                >
+                    {!collapsed && <span className="ml-4">Marketplace</span>}
+                </button>
             </nav>
         </div>
     );

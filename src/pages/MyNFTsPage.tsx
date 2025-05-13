@@ -9,6 +9,7 @@ const MyNFTsPage = () => {
   const { connection } = useConnection();
   const [nfts, setNfts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [videoOpenIndex, setVideoOpenIndex] = useState(null);
 
   const fetchNFTs = async (ownerPublicKey, solanaConnection) => {
     if (!ownerPublicKey || !solanaConnection) return;
@@ -113,7 +114,7 @@ const MyNFTsPage = () => {
           <p className="text-gray-600">Connect your wallet to see your NFTs.</p>
         )}
         {!loading && sortedNfts.length > 0 && (
-          sortedNfts.map(nft => {
+          sortedNfts.map((nft, idx) => {
 
             const cityMap = {
               "Lon": "London", "Par": "Paris", "Ber": "Berlin", "Rom": "Rome", "Mad": "Madrid",
@@ -137,7 +138,7 @@ const MyNFTsPage = () => {
                 plant = plantMap[parts[3]] || parts[3] || "N/A";
                 ec = parts[4] || "N/A";
                 ph = parts[5] || "N/A";
-                temp = parts[6].replace(/\.$/, "") || "N/A"; 
+                temp = parts[6].replace(/\.$/, "") || "N/A";
               }
             }
             // Prefer local nickname if available
@@ -190,6 +191,76 @@ const MyNFTsPage = () => {
                   <div><strong>Temperature:</strong> {temp === "N/A" ? "N/A" : `${temp}°C`}</div>
                 </div>
                 <div style={{ height: "12px" }}></div>
+                {/* Growth Video Button */}
+                <button
+                  style={{
+                    background: "#4CAF50",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: "6px",
+                    padding: "6px 16px",
+                    cursor: "pointer",
+                    marginBottom: "12px"
+                  }}
+                  onClick={() => setVideoOpenIndex(idx)}
+                >
+                  View Growth Video
+                </button>
+                {/* Modal for video */}
+                {videoOpenIndex === idx && (
+                  <div
+                    style={{
+                      position: "fixed",
+                      top: 0,
+                      left: 0,
+                      width: "100vw",
+                      height: "100vh",
+                      background: "rgba(0,0,0,0.5)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      zIndex: 9999
+                    }}
+                    onClick={() => setVideoOpenIndex(null)}
+                  >
+                    <div
+                      style={{
+                        background: "#fff",
+                        borderRadius: "12px",
+                        padding: "16px",
+                        position: "relative",
+                        minWidth: "320px"
+                      }}
+                      onClick={e => e.stopPropagation()}
+                    >
+                      <button
+                        style={{
+                          position: "absolute",
+                          top: "8px",
+                          right: "12px",
+                          background: "transparent",
+                          border: "none",
+                          fontSize: "20px",
+                          cursor: "pointer"
+                        }}
+                        onClick={() => setVideoOpenIndex(null)}
+                      >
+                        ×
+                      </button>
+                      <div style={{ width: "480px", maxWidth: "80vw" }}>
+                        <iframe
+                          width="100%"
+                          height="270"
+                          src="https://www.youtube.com/embed/8G0zxQHHMqc"
+                          title="Plant Growth Video"
+                          frameBorder="0"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                        ></iframe>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             );
           })
