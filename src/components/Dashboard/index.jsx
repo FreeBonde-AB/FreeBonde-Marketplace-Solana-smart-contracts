@@ -5,13 +5,10 @@ import { Connection, clusterApiUrl } from "@solana/web3.js";
 import { faker } from "@faker-js/faker";
 import { toast } from "react-hot-toast";
 import PlantCard from "../PlantCard";
-import plantImage1 from "../../assets/plant_images/sample_plant_1.jpg";
-import plantImage2 from "../../assets/plant_images/sample_plant_2.jpg";
-import plantImage3 from "../../assets/plant_images/sample_plant_3.png";
-import plantImage4 from "../../assets/plant_images/sample_plant_4.jpg";
-import plantImage5 from "../../assets/plant_images/sample_plant_5.jpeg";
 import { useFreeBondeBalance } from "../../FreeBondeBalanceContext";
 import "./Dashboard.css"; // Import the CSS file for Dashboard styles
+import PLANT_IMAGE_URLS from "../../assets/plant_images/plantImageUrls";
+import { uploadToArweave, uploadMetadataToArweave } from "../../utils/arweave";
 
 const stages = ["mature_plant", "sprout", "seed", "flowering", "fruiting"];
 
@@ -22,79 +19,91 @@ const getRandomFloat = (min, max, decimals = 2) => {
     return (Math.random() * (max - min) + min).toFixed(decimals);
 };
 
-const PLANT_IMAGES = [
-    plantImage1,
-    plantImage2,
-    plantImage3,
-    plantImage4,
-    plantImage5,
-];
 
-const getRandomPlantImage = () => {
-    const idx = Math.floor(Math.random() * PLANT_IMAGES.length);
-    return PLANT_IMAGES[idx];
-};
 
 
 const Dashboard = () => {
-    // States
-    const [plantData, setPlantData] = useState(null);
-    // Use context for freeBondeBalance
+ 
+    const [plantList, setPlantList] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [globalCity, setGlobalCity] = useState(""); // Global city state
     const { freeBondeBalance, setFreeBondeBalance } = useFreeBondeBalance();
 
     const generateFreeBonde = () => {
- setFreeBondeBalance(prevBalance => prevBalance + 100);};
-    // Automatically generate plant data on component mount
+        const randomAmount = Math.floor(Math.random() * 51) + 50;
+        setFreeBondeBalance(prevBalance => prevBalance + randomAmount);
+    };
+
     useEffect(() => {
         handleGenerate();
     }, []);
 
-    // Hooks
     const { publicKey } = useWallet();
     const wallet = useWallet();
 
+
     const handleGenerate = () => {
-        setPlantData(generatePlantData());
- };
+        setLoading(true);
+        setTimeout(() => {
+            // City list
+            const cities = [
+                "London", "Paris", "Berlin", "Rome", "Madrid", "Ottawa", "Washington", "Tokyo", "Canberra", "Moscow",
+                "Brasilia", "Beijing", "Seoul", "Bangkok", "New Delhi", "Cairo", "Buenos Aires", "Wellington", "Oslo", "Stockholm"
+            ];
+            // Randomly select a city, all plants use this city
+            const city = cities[getRandomInt(0, cities.length - 1)];
+            setGlobalCity(city);
+            // Generate 5 plants, all use the same city
+            const newPlants = Array.from({ length: 5 }, () => generatePlantData(city));
+            setPlantList(newPlants);
+            setLoading(false);
+        }, 1000);
+    };
 
     const uploadToArweave = (image) => {
-        return image;
+
+        return "https://arweave.net/fake-image-url.jpg";
     };
 
-    const uploadMetadataToArweave = async (metadata) => {};
+    const uploadMetadataToArweave = async (metadata) => {
 
-    const LEONARDO_IMAGES = [
-        "https://cdn.leonardo.ai/users/577d5d05-5f18-4951-b4b9-ad7cfaa975f9/generations/6d147b2a-36a3-4043-a58b-92c15ec8a669/segments/1:4:1/Flux_Schnell_exquisite_high_fashion_photography_of_Kale_Sprout_0.jpeg",
-        "https://cdn.leonardo.ai/users/577d5d05-5f18-4951-b4b9-ad7cfaa975f9/generations/2d54ecf1-046a-49fc-bf03-e3964432a685/segments/3:4:1/Flux_Schnell_exquisite_high_fashion_photography_of_Baby_Bok_Ch_2.jpeg",
-        "https://cdn.leonardo.ai/users/577d5d05-5f18-4951-b4b9-ad7cfaa975f9/generations/eacbae2a-4208-480c-8b72-0efbad1cf0b8/segments/2:4:1/Flux_Schnell_A_sleek_highfashion_photograph_showcasing_a_beaut_1.jpeg",
-        "https://cdn.leonardo.ai/users/577d5d05-5f18-4951-b4b9-ad7cfaa975f9/generations/c25b91ef-c127-4ffc-8521-d87c7988258c/segments/2:4:1/Flux_Dev_Macro_photograph_capturing_the_intricacies_of_sunflow_1.jpeg",
-        "https://cdn.leonardo.ai/users/577d5d05-5f18-4951-b4b9-ad7cfaa975f9/generations/c25b91ef-c127-4ffc-8521-d87c7988258c/segments/4:4:1/Flux_Dev_Macro_photograph_capturing_the_intricacies_of_sunflow_3.jpeg",
-        "https://cdn.leonardo.ai/users/577d5d05-5f18-4951-b4b9-ad7cfaa975f9/generations/7556628d-6aba-4891-ba0d-c453348ae07d/Leonardo_Phoenix_Please_provide_a_photo_of_a_sleek_blackgray_v_3.jpg",
-        "https://cdn.leonardo.ai/users/577d5d05-5f18-4951-b4b9-ad7cfaa975f9/generations/7c31d5e0-14c5-494b-91d6-dc8bc2661f20/Leonardo_Phoenix_Please_provide_a_photo_of_a_sleek_blackgray_v_1.jpg"
-    ];
-
-    const getRandomLeonardoImage = () => {
-        const idx = Math.floor(Math.random() * LEONARDO_IMAGES.length);
-        return LEONARDO_IMAGES[idx];
+        return "https://arweave.net/fake-metadata-url.json";
     };
 
-    const generatePlantData = () => {
-        const selectedImageUrl = getRandomLeonardoImage(); // Select image here
+
+    // generatePlantData now accepts city parameter
+    const generatePlantData = (city) => {
+        // Common western supermarket vegetables
+        const plantNames = [
+            "Lettuce", "Tomato", "Spinach", "Kale", "Bell Pepper", "Celery", "Cauliflower"
+        ];
+
+        const randomIndex = Math.floor(Math.random() * PLANT_IMAGE_URLS.length);
+        const selectedImageUrl = PLANT_IMAGE_URLS[randomIndex];
+
+        const plantName = plantNames[getRandomInt(0, plantNames.length - 1)];
+        const growDays = getRandomInt(1, 365);
+
         return {
             plant_id: faker.string.nanoid(),
             plant_type: getRandomInt(1, 10),
             stage: stages[getRandomInt(0, stages.length - 1)],
+            city: city, // Use the passed city
+            plant_name: plantName,
+            grow_days: growDays,
             data: {
-                temperature: getRandomInt(20, 90),
-                humidity: getRandomInt(50, 80),
-                ph: getRandomFloat(1, 10),
+                temperature: getRandomInt(15, 35), // Temperature range 15-35
+                ph: getRandomFloat(4, 8),
                 ec: getRandomFloat(1, 2),
-                plant_image: selectedImageUrl, // Use the selected image URL
+                plant_image: selectedImageUrl,
             },
         };
     };
+    
 
-    const mintNFT = async () => {
+
+    const mintNFT = async (plantData) => {
+        let nft = null;
         try {
             if (!plantData) {
                 toast.error("Please generate plant data first.");
@@ -106,21 +115,38 @@ const Dashboard = () => {
                 return;
             }
 
+            let nickname = "";
+            if (publicKey) {
+                nickname = localStorage.getItem(`nickname_${publicKey}`) || `User_${publicKey.toString().slice(0, 6)}`;
+            }
+
+            // Generate name consistent with frontend parsing
+            const shortNick = nickname.slice(0, 4);
+            const shortCity = (plantData.city || "").slice(0, 3);
+            const shortDays = String(plantData.grow_days).padStart(2, "0").slice(-2);
+            const shortPlant = (plantData.plant_name || "").slice(0, 2);
+            const shortEC = String(Number(plantData.data.ec).toFixed(1)).slice(0, 3);
+            const shortPH = String(Number(plantData.data.ph).toFixed(1)).slice(0, 3);
+            const shortTemp = String(plantData.data.temperature).padStart(2, "0").slice(-2);
+            const now = new Date();
+            const MM = String(now.getMonth() + 1).padStart(2, "0");
+            const DD = String(now.getDate()).padStart(2, "0");
+            const HH = String(now.getHours()).padStart(2, "0");
+            const timeTag = `${MM}${DD}${HH}`;
+            const nftName = `${shortNick}-${shortCity}-${shortDays}-${shortPlant}-${shortEC}-${shortPH}-${shortTemp}-${timeTag}`.slice(0, 32);
+
             const connection = new Connection(clusterApiUrl("devnet"));
             const metaplex = new Metaplex(connection).use(
                 walletAdapterIdentity(wallet)
             );
 
-            // Use the image URL generated with plant data
             const imageUrl = plantData.data.plant_image;
 
-            // 创建 NFT
             console.log("Creating NFT...");
-            const { nft } = await metaplex.nfts().create({
-                name: `Plant #${plantData.plant_id}`,
-                // Change the symbol to "FreeBonde"
+            const result = await metaplex.nfts().create({
+                name: nftName,
                 symbol: "FreeBonde",
-                uri: imageUrl, // Use the selected image URL for URI
+                uri: imageUrl,
                 sellerFeeBasisPoints: 500,
                 properties: {
                     files: [
@@ -131,32 +157,15 @@ const Dashboard = () => {
                     ]
                 },
                 attributes: [
-                    {
-                        trait_type: "Plant Type",
-                        value: String(plantData.plant_type)
-                    },
-                    {
-                        trait_type: "Stage",
-                        value: plantData.stage
-                    },
-                    {
-                        trait_type: "Temperature",
-                        value: String(plantData.data.temperature)
-                    },
-                    {
-                        trait_type: "Humidity",
-                        value: String(plantData.data.humidity)
-                    },
-                    {
-                        trait_type: "pH",
-                        value: String(plantData.data.ph)
-                    },
-                    {
-                        trait_type: "EC",
-                        value: String(plantData.data.ec)
-                    }
+                    { trait_type: "Plant Type", value: String(plantData.plant_type) },
+                    { trait_type: "Stage", value: plantData.stage },
+                    { trait_type: "Temperature", value: String(plantData.data.temperature) },
+                    { trait_type: "pH", value: String(plantData.data.ph) },
+                    { trait_type: "EC", value: String(plantData.data.ec) },
+                    { trait_type: "Username", value: nickname }
                 ]
             });
+            nft = result.nft;
 
             console.log("NFT created successfully!");
             console.log("Mint Address:", nft.address.toString());
@@ -164,38 +173,85 @@ const Dashboard = () => {
             toast.success(`NFT minted successfully! Mint address: ${nft.address.toString()}`);
             return nft;
         } catch (error) {
-            toast.error(
-                `Error minting NFT: ${error.message || error.toString()}`
-            );
+            // As long as nft exists, report success; otherwise, log error only
+            if (nft && nft.address) {
+                toast.success(`NFT minted successfully! Mint address: ${nft.address.toString()}`);
+            }
             console.error("Error minting NFT:", error);
         }
     };
 
- return (
-    <div className="dashboard-section-container"> {/* Container for the Dashboard section */}
-      <div className="dashboard-buttons-container"> {/* Container for all content */}
 
+ return (
+    <div className="dashboard-section-container">
+      <div className="dashboard-buttons-container" style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
         <p>FreeBonde Balance: {freeBondeBalance}</p>
         <button onClick={generateFreeBonde} className="generate-button">
-            Generate FreeBonde
+            Generate FreeBonde (For test ONLY!)
         </button>
-
-          {plantData && <PlantCard data={plantData} />}
-
-          <button onClick={handleGenerate} className="generate-button">
-              Generate Plant Data
-            </button>
-          {plantData && (
-              <button className="mint-button" onClick={mintNFT} hidden={!wallet.connected}>
-                  Create Plant NFT
-              </button>
-          )}
-          {!wallet.connected && (
-              <p className="connect-wallet-message">Please connect your wallet first to mint the NFT.</p>
-          )}
+        {/* Place the Update Plants Info button here */}
+        <button onClick={handleGenerate} className="generate-button" style={{ marginTop: "12px" }}>
+            Update Plants Info
+        </button>
+        {loading && <p style={{color: "#888"}}>Loading...</p>}
+        {/* Center all cards */}
+        {!loading && plantList.length > 0 && (
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "24px", justifyContent: "center", margin: "24px 0" }}>
+                {plantList.map((plant, idx) => {
+                    // Get nickname
+                    let nickname = "";
+                    if (publicKey) {
+                        nickname = localStorage.getItem(`nickname_${publicKey}`) || `N/A`;
+                    } else {
+                        nickname = "N/A";
+                    }
+                    return (
+                        <div
+                            key={plant.plant_id}
+                            style={{
+                                margin: "8px",
+                                minWidth: "260px",
+                                display: "flex",
+                                flexDirection: "column",
+                                alignItems: "center",
+                                boxShadow: "0 4px 16px rgba(0,0,0,0.13), 0 1.5px 4px rgba(0,0,0,0.09)",
+                                borderRadius: "12px",
+                                background: "#fff"
+                            }}
+                        >
+                            {/* Only show image */}
+                            <img src={plant.data.plant_image} alt={plant.plant_name} style={{ width: "180px", height: "180px", objectFit: "cover", borderRadius: "8px", marginTop: "16px" }} />
+                            {/* New field info */}
+                            <div style={{ marginTop: "8px", background: "#f8f8f8", borderRadius: "8px", padding: "10px", textAlign: "center", width: "100%" }}>
+                                <div><strong>Grower:</strong> {nickname}</div>
+                                <div><strong>City:</strong> {plant.city}</div>
+                                <div><strong>Grow Days:</strong> {plant.grow_days}</div>
+                                <div><strong>Plant Name:</strong> {plant.plant_name}</div>
+                                <div><strong>EC:</strong> {plant.data.ec}</div>
+                                <div><strong>pH:</strong> {plant.data.ph}</div>
+                                <div><strong>Temperature:</strong> {plant.data.temperature}°C</div>
+                            </div>
+                            {/* Center the button */}
+                            <div style={{ width: "100%", display: "flex", justifyContent: "center", marginTop: "8px", marginBottom: "16px" }}>
+                                <button
+                                    className="mint-button"
+                                    onClick={() => mintNFT(plant)}
+                                    hidden={!wallet.connected}
+                                >
+                                    Create Plant NFT
+                                </button>
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+        )}
+        {!wallet.connected && (
+            <p className="connect-wallet-message">Please connect your wallet first to mint the NFT.</p>
+        )}
       </div>
     </div>
-  );
+);
 };
 
 export default Dashboard;
