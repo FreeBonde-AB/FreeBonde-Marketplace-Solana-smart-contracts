@@ -16,9 +16,6 @@
     margin-top: 30px; /* Add spacing from elements above */
 }
 
-button {
-    margin: 10px 0; /* Add vertical margin around buttons */
-}
 
 .generate-button,
 .mint-button {
