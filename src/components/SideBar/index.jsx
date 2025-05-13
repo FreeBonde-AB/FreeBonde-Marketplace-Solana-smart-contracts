@@ -18,7 +18,7 @@ const SideBar = () => {
 
     return (
         <div
-            className={`h-screen bg-[#138d75] text-white transition-all duration-300 flex flex-col ${
+            className={`overflow-y-auto bg-[#138d75] text-white transition-all duration-300 flex flex-col ${
                 collapsed ? "w-16" : "w-56"
             }`}
         >
