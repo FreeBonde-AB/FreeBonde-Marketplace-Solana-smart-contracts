@@ -111,6 +111,8 @@ const Dashboard = () => {
 
     const mintNFT = async (plantData) => {
         let nft = null;
+        const loadingMintId = toast.loading("Creating NFT...");
+
         try {
             if (!plantData) {
                 toast.error("Please generate plant data first.");
@@ -196,7 +198,17 @@ const Dashboard = () => {
                     { trait_type: "Username", value: nickname },
                 ],
             });
+
             nft = result.nft;
+
+            if (nft) {
+                toast.success(
+                    `NFT minted successfully! Mint address: ${nft.address.toString()}`,
+                    { id: loadingMintId }
+                );
+            }
+
+            const loadingVerifyId = toast.loading("Verifying NFT...");
 
             // Now verify the collection
             const nftVerifyResponse = await metaplex.nfts().verifyCollection({
@@ -207,24 +219,21 @@ const Dashboard = () => {
                 isSizedCollection: true,
             });
 
-            console.log("NFT verification response:", nftVerifyResponse);
-
-            console.log("NFT created successfully!", nft);
-            console.log("Mint Address:", nft.address.toString());
-
-            toast.success(
-                `NFT minted successfully! Mint address: ${nft.address.toString()}`
-            );
+            if (nftVerifyResponse) {
+                toast.success("NFT Verified", { id: loadingVerifyId });
+            }
 
             return nft;
         } catch (error) {
             // As long as nft exists, report success; otherwise, log error only
             if (nft && nft.address) {
                 toast.success(
-                    `NFT minted successfully! Mint address: ${nft.address.toString()}`
+                    `NFT minted successfully! Mint address: ${nft.address.toString()}`,
+                    { id: loadingMintId }
                 );
+            } else {
+                toast.error("Error minting NFT", { id: loadingMintId });
             }
-            console.error("Error minting NFT:", error);
         }
     };
 
