@@ -247,9 +247,9 @@ const Dashboard = () => {
                     alignItems: "center",
                 }}
             >
-                <p>FreeBonde Balance: {freeBondeBalance}</p>
-                <button onClick={generateFreeBonde} className="generate-button">
-                    Generate FreeBonde (For test ONLY!)
+                <button onClick={generateFreeBonde} className={`flex items-center gap-2 mt-2 bg-amber-600 hover:bg-amber-700
+                         px-4 py-2 rounded text-white font-semibold cursor-pointer`}>
+                    Generate FreeBonde (TEST)
                 </button>
                 {/* Place the Update Plants Info button here */}
                 <button
