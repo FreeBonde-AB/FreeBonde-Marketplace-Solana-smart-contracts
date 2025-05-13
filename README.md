@@ -69,5 +69,13 @@ This project is licensed under the MIT License.
 
 **Happy Minting! 🌿**
 
+## Recent Updates
+
+- Unified NFT name format for consistent frontend/backend parsing.
+- Removed all Chinese comments and prompts, now fully in English.
+- Improved mintNFT logic: even if metadata fetch fails, successful mints are always reported as successful to the user.
+- MyNFTsPage now sorts NFTs by mint time (newest first).
+- Codebase is now more standardized and international-friendly.
+
 
 
