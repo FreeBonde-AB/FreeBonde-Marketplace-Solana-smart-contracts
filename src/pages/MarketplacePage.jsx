@@ -2,20 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useWallet, useConnection } from "@solana/wallet-adapter-react";
 import { Metaplex, keypairIdentity } from "@metaplex-foundation/js";
 import { PublicKey, LAMPORTS_PER_SOL, SystemProgram, Transaction } from "@solana/web3.js";
-
-// Assume you have an API or global state to get all NFTs, here is mock data for demonstration
-// Please replace with real NFT fetching logic in actual project
-const mockNFTs = [
-  // Example data structure
-  // {
-  //   address: "xxx",
-  //   name: "User-Lon-12-Le-1.2-6.5-22-052312",
-  //   image: "https://arweave.net/fake-image-url.jpg",
-  //   owner: "User",
-  //   city: "London",
-  //   plant: "Lettuce",
-  // }
-];
+import toast from "react-hot-toast";
 
 const cityMap = {
   "Lon": "London", "Par": "Paris", "Ber": "Berlin", "Rom": "Rome", "Mad": "Madrid",
@@ -35,22 +22,20 @@ const MarketplacePage = () => {
   const [filterCity, setFilterCity] = useState("");
   const [filterPlant, setFilterPlant] = useState("");
 
-  // Replace with real API to fetch all NFTs on devnet
-  useEffect(() => {
-    setNfts(mockNFTs);
-  }, []);
+  console.log('marketplace nfts', nfts);
+  
 
   const parseNFT = (nft) => {
-    let grower = "N/A", city = "N/A", plant = "N/A";
-    if (nft.name) {
-      const parts = nft.name.split("-");
-      if (parts.length >= 4) {
-        grower = parts[0] || "N/A";
-        city = cityMap[parts[1]] || parts[1] || "N/A";
-        plant = plantMap[parts[3]] || parts[3] || "N/A";
-      }
+    console.log('pnft', nft);
+    const token_name = nft.content?.metadata?.name;
+    const token_symbol = nft.content?.metadata?.symbol;
+    const token_image = nft.content?.metadata?.json_uri;
+    
+    return {
+      token_name,
+      token_symbol,
+      token_image,
     }
-    return { grower, city, plant };
   };
 
   const filteredNFTs = nfts.filter(nft => {
@@ -62,32 +47,42 @@ const MarketplacePage = () => {
     );
   });
 
-  // Simulate buy: replace with real Solana transaction and NFT transfer logic
-  const { publicKey, sendTransaction } = useWallet();
-  const { connection } = useConnection();
-
   useEffect(() => {
-    const fetchAllNFTs = async () => {
-      if (!connection) return;
+    fetchMarketplaceNFTs();
+  }, []);
+
+  const fetchMarketplaceNFTs = async () => {
+    try {
       setLoading(true);
-      try {
-        // This is just a demo, in reality you may need to aggregate all NFTs from all users or a backend service
-        // Here only fetch NFTs of current wallet for demonstration
-        // You can adjust to fetch all or specific NFTs as needed
-        const metaplex = Metaplex.make(connection);
-        // Example: fetch all NFTs under a collection
-        // const nfts = await metaplex.nfts().findAllByCreator({ creator: new PublicKey("xxx") });
-        // Here only fetch current wallet's NFTs
-        // const tokenAccounts = await connection.getParsedTokenAccountsByOwner(publicKey, { programId: new PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA') });
-        // ...similar logic as MyNFTsPage.tsx...
-        setNfts([]); // Replace with real NFT array here
-      } catch (e) {
-        setNfts([]);
-      }
+      // Fetch NFTs from Helius API
+      const response = await fetch(
+        `https://devnet.helius-rpc.com/?api-key=ec49d80c-6879-4d92-8d00-f485bf0901cc`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            jsonrpc: '2.0',
+            id: 'my-id',
+            method: 'searchAssets',
+            params: {
+              grouping: ['collection', 'CjUBBjARbAP3zJMr97inXwfYa9uDfMC4QmFJ3QwUhMPj'],
+              page: 1,
+              limit: 1000
+            }
+          })
+        }
+      );
+      const data = await response.json();
+
+      setNfts(data.result.items);
+
       setLoading(false);
-    };
-    fetchAllNFTs();
-  }, [connection]);
+    } catch (error) {
+      setLoading(false);
+      toast.error("Failed to get NFTs");
+    }
+  };
+
   const allCities = Array.from(new Set(nfts.map(nft => parseNFT(nft).city))).filter(Boolean);
   const allPlants = Array.from(new Set(nfts.map(nft => parseNFT(nft).plant))).filter(Boolean);
 
@@ -129,7 +124,7 @@ const MarketplacePage = () => {
           <p className="text-gray-600">No NFTs match the filter.</p>
         )}
         {filteredNFTs.map((nft, idx) => {
-          const { grower, city, plant } = parseNFT(nft);
+          const { token_name, token_symbol, token_image } = parseNFT(nft);
           return (
             <div
               key={nft.address || idx}
@@ -144,11 +139,11 @@ const MarketplacePage = () => {
                 background: "#fff"
               }}
             >
-              <h3 className="text-xl font-semibold mb-2 mt-4">{nft.name}</h3>
-              {nft.image && (
+              <h3 className="text-xl font-semibold mb-2 mt-4">{token_name || "No Name"}</h3>
+              {token_image && (
                 <img
-                  src={nft.image}
-                  alt={nft.name}
+                  src={token_image}
+                  alt={token_name}
                   style={{
                     width: "180px",
                     height: "180px",
@@ -159,9 +154,7 @@ const MarketplacePage = () => {
                 />
               )}
               <div style={{ marginTop: "8px", background: "#f8f8f8", borderRadius: "8px", padding: "10px", textAlign: "center", width: "100%" }}>
-                <div><strong>Grower:</strong> {grower}</div>
-                <div><strong>City:</strong> {city}</div>
-                <div><strong>Plant:</strong> {plant}</div>
+                <div><strong>Symbol:</strong> {token_symbol}</div>
               </div>
               <button
                 style={{

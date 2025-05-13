@@ -1,7 +1,7 @@
 import { useState, useEffect, useContext } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { Metaplex, walletAdapterIdentity } from "@metaplex-foundation/js";
-import { Connection, clusterApiUrl } from "@solana/web3.js";
+import { Connection, clusterApiUrl, PublicKey } from "@solana/web3.js";
 import { faker } from "@faker-js/faker";
 import { toast } from "react-hot-toast";
 import PlantCard from "../PlantCard";
@@ -70,6 +70,21 @@ const Dashboard = () => {
         return "https://arweave.net/fake-metadata-url.json";
     };
 
+    // const createCollectionNFT = async () => {
+    //     const { nft } = await metaplex.nfts().create({
+    //       name: "Freebonde Plants",
+    //       uri: "freebonde_nft_metaData", // Simple metadata
+    //       sellerFeeBasisPoints: 0,
+    //       isCollection: true
+    //     });
+    //     console.log("COLLECTION ADDRESS:", nft.address.toString());
+    //     return nft.address;
+    //   };
+
+    //  useEffect(() => {
+    //     createCollectionNFT();
+    //  });
+
 
     // generatePlantData now accepts city parameter
     const generatePlantData = (city) => {
@@ -117,23 +132,39 @@ const Dashboard = () => {
 
             let nickname = "";
             if (publicKey) {
-                nickname = localStorage.getItem(`nickname_${publicKey}`) || `User_${publicKey.toString().slice(0, 6)}`;
+                nickname =
+                    localStorage.getItem(`nickname_${publicKey}`) ||
+                    `User_${publicKey.toString().slice(0, 6)}`;
             }
 
             // Generate name consistent with frontend parsing
             const shortNick = nickname.slice(0, 4);
             const shortCity = (plantData.city || "").slice(0, 3);
-            const shortDays = String(plantData.grow_days).padStart(2, "0").slice(-2);
+            const shortDays = String(plantData.grow_days)
+                .padStart(2, "0")
+                .slice(-2);
             const shortPlant = (plantData.plant_name || "").slice(0, 2);
-            const shortEC = String(Number(plantData.data.ec).toFixed(1)).slice(0, 3);
-            const shortPH = String(Number(plantData.data.ph).toFixed(1)).slice(0, 3);
-            const shortTemp = String(plantData.data.temperature).padStart(2, "0").slice(-2);
+            const shortEC = String(Number(plantData.data.ec).toFixed(1)).slice(
+                0,
+                3
+            );
+            const shortPH = String(Number(plantData.data.ph).toFixed(1)).slice(
+                0,
+                3
+            );
+            const shortTemp = String(plantData.data.temperature)
+                .padStart(2, "0")
+                .slice(-2);
             const now = new Date();
             const MM = String(now.getMonth() + 1).padStart(2, "0");
             const DD = String(now.getDate()).padStart(2, "0");
             const HH = String(now.getHours()).padStart(2, "0");
             const timeTag = `${MM}${DD}${HH}`;
-            const nftName = `${shortNick}-${shortCity}-${shortDays}-${shortPlant}-${shortEC}-${shortPH}-${shortTemp}-${timeTag}`.slice(0, 32);
+            const nftName =
+                `${shortNick}-${shortCity}-${shortDays}-${shortPlant}-${shortEC}-${shortPH}-${shortTemp}-${timeTag}`.slice(
+                    0,
+                    32
+                );
 
             const connection = new Connection(clusterApiUrl("devnet"));
             const metaplex = new Metaplex(connection).use(
@@ -146,31 +177,53 @@ const Dashboard = () => {
             const result = await metaplex.nfts().create({
                 name: nftName,
                 symbol: "FreeBonde",
+                collection: new PublicKey(
+                    "CjUBBjARbAP3zJMr97inXwfYa9uDfMC4QmFJ3QwUhMPj"
+                ),
                 uri: imageUrl,
                 sellerFeeBasisPoints: 500,
                 properties: {
                     files: [
                         {
                             uri: imageUrl,
-                            type: "image/jpeg"
-                        }
-                    ]
+                            type: "image/jpeg",
+                        },
+                    ],
                 },
                 attributes: [
-                    { trait_type: "Plant Type", value: String(plantData.plant_type) },
+                    {
+                        trait_type: "Plant Type",
+                        value: String(plantData.plant_type),
+                    },
                     { trait_type: "Stage", value: plantData.stage },
-                    { trait_type: "Temperature", value: String(plantData.data.temperature) },
+                    {
+                        trait_type: "Temperature",
+                        value: String(plantData.data.temperature),
+                    },
                     { trait_type: "pH", value: String(plantData.data.ph) },
                     { trait_type: "EC", value: String(plantData.data.ec) },
-                    { trait_type: "Username", value: nickname }
-                ]
+                    { trait_type: "Username", value: nickname },
+                ],
             });
             nft = result.nft;
 
-            console.log("NFT created successfully!");
+            // Now verify the collection
+            const nftVerifyResponse = await metaplex.nfts().verifyCollection({
+                mintAddress: nft.address,
+                collectionMintAddress: new PublicKey(
+                    "CjUBBjARbAP3zJMr97inXwfYa9uDfMC4QmFJ3QwUhMPj"
+                ),
+                isSizedCollection: true,
+            });
+
+            console.log("NFT verification response:", nftVerifyResponse);
+
+            console.log("NFT created successfully!", nft);
             console.log("Mint Address:", nft.address.toString());
 
-            toast.success(`NFT minted successfully! Mint address: ${nft.address.toString()}`);
+            toast.success(
+                `NFT minted successfully! Mint address: ${nft.address.toString()}`
+            );
             return nft;
         } catch (error) {
             // As long as nft exists, report success; otherwise, log error only

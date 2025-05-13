@@ -53,27 +53,7 @@ h1 {
   color: var(--primary); /* Swedish Yellow */
 }
 
-button {
-  border: 1px solid transparent;
-  font-size: 1.1em; /* Increased font size */
-  font-weight: 500;
-  font-family: inherit;
-  background-color: var(--primary); /* Apply primary color */
-  background-color: #E0E0E0; /* Light gray background */
-  color: #000000; /* Black text */
-  cursor: pointer;
-  transition: border-color 0.25s;
-  border-radius: 8px;
-  padding: 0.8em 1.5em; /* Increased padding */
-}
-button:hover {
-  background-color: var(--primary); /* Set background to primary color on hover */
-}
 
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
 
 @media (prefers-color-scheme: light) {
   /* Keep dark mode styles as default and override specific light mode properties */
