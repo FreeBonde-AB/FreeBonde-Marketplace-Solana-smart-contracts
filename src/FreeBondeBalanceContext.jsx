@@ -1,12 +1,7 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 
-interface FreeBondeBalanceContextType {
-  freeBondeBalance: number;
-  setFreeBondeBalance: React.Dispatch<React.SetStateAction<number>>;
-}
-
 // Create the Context with a default undefined value
-const FreeBondeBalanceContext = createContext<FreeBondeBalanceContextType | undefined>(undefined);
+const FreeBondeBalanceContext = createContext(undefined);
 
 // Custom hook to use the context, providing a more convenient way to access it
 const useFreeBondeBalance = () => {
@@ -17,13 +12,9 @@ const useFreeBondeBalance = () => {
   return context;
 };
 
-interface FreeBondeBalanceProviderProps {
-  children: React.ReactNode;
-}
-
 // Provider component
-const FreeBondeBalanceProvider: React.FC<FreeBondeBalanceProviderProps> = ({ children }) => {
-  const [freeBondeBalance, setFreeBondeBalance] = useState<number>(() => {
+const FreeBondeBalanceProvider = ({ children }) => {
+  const [freeBondeBalance, setFreeBondeBalance] = useState(() => {
     // Initialize state from localStorage when the Provider mounts
     const savedBalance = localStorage.getItem('freeBondeBalance');
     if (savedBalance !== null) {

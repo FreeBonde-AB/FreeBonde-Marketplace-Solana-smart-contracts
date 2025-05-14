@@ -109,6 +109,7 @@ const Dashboard = () => {
         };
     };
 
+
     const mintNFT = async (plantData) => {
         let nft = null;
         const loadingMintId = toast.loading("Creating NFT...");
@@ -123,6 +124,9 @@ const Dashboard = () => {
                 toast.error("Please connect your wallet first.");
                 return;
             }
+
+            // Disable mint button
+            setLoading(true);
 
             let nickname = "";
             if (publicKey) {
@@ -167,6 +171,7 @@ const Dashboard = () => {
 
             const imageUrl = plantData.data.plant_image;
 
+            // Attempt to mint NFT (First Transaction)
             const result = await metaplex.nfts().create({
                 name: nftName,
                 symbol: "FreeBonde",
@@ -199,182 +204,140 @@ const Dashboard = () => {
                 ],
             });
 
-            nft = result.nft;
-
-            if (nft) {
+            // Wait for transaction confirmation (for the minting transaction)
+            if (result && result.response && result.response.signature) {
+                const signature = result.response.signature;
+                toast.loading("Confirming minting transaction...", { id: loadingMintId });
+                await connection.confirmTransaction(signature, "confirmed");
+                // Only one success toast
                 toast.success(
-                    `NFT minted successfully! Mint address: ${nft.address.toString()}`,
+                    `NFT minted successfully! Mint address: ${result.mintAddress ? result.mintAddress.toString() : "Unknown"}`,
                     { id: loadingMintId }
                 );
-            }
 
-            const loadingVerifyId = toast.loading("Verifying NFT...");
+                // Removed the line that refetches nft = result.nft; after confirmation if not needed for further steps
+                // nft = result.nft; // Get nft object after transaction is confirmed
 
-            // Now verify the collection
-            const nftVerifyResponse = await metaplex.nfts().verifyCollection({
-                mintAddress: nft.address,
-                collectionMintAddress: new PublicKey(
-                    "CjUBBjARbAP3zJMr97inXwfYa9uDfMC4QmFJ3QwUhMPj"
-                ),
-                isSizedCollection: true,
-            });
+                // Removed the collection verification step here
+                // const loadingVerifyId = toast.loading("Verifying NFT...");
+                // const nftVerifyResponse = await metaplex.nfts().verifyCollection({...});
+                // if (nftVerifyResponse) {
+                //     toast.success("NFT Verified", { id: loadingVerifyId });
+                // }
 
-            if (nftVerifyResponse) {
-                toast.success("NFT Verified", { id: loadingVerifyId });
-            }
-
-            return nft;
-        } catch (error) {
-            // As long as nft exists, report success; otherwise, log error only
-            if (nft && nft.address) {
-                toast.success(
-                    `NFT minted successfully! Mint address: ${nft.address.toString()}`,
-                    { id: loadingMintId }
-                );
             } else {
-                toast.error("Error minting NFT", { id: loadingMintId });
+                 // If no signature, transaction might not have been successfully submitted
+                toast.error("Failed to get minting transaction signature.", { id: loadingMintId });
             }
+
+            // Return the result from create, which includes mintAddress
+            return result;
+        } catch (error) {
+            // More detailed error handling for minting transaction
+            console.error("Minting error:", error);
+
+            let errorMessage = "Error minting NFT";
+            if (error instanceof Error) {
+                 errorMessage = `Error minting NFT: ${error.message}`;
+                 // Check error message to distinguish between user cancellation, etc.
+                 if (error.message.includes("cancelled") || error.message.includes("rejected")) {
+                     errorMessage = "Transaction cancelled by user.";
+                 } else if (error.message.includes("duplicate")) {
+                      errorMessage = "NFT with this data already exists.";
+                 }
+                 // You can add more error checks and messages based on the specific errors you encounter
+            }
+
+            toast.error(errorMessage, { id: loadingMintId });
+
+        } finally {
+            // Re-enable button whether success or failure
+            setLoading(false);
         }
     };
 
+
     return (
-        <div className="dashboard-section-container">
-            <div
-                className="dashboard-buttons-container"
-                style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                }}
-            >
-                <button onClick={generateFreeBonde} className={`flex items-center gap-2 mt-2 bg-amber-600 hover:bg-amber-700
-                         px-4 py-2 rounded text-white font-semibold cursor-pointer`}>
-                    Generate FreeBonde (TEST)
+        <div className="container mx-auto px-4 py-8">
+            {/* 删除Dashboard标题 */}
+            <div className="flex flex-col items-center mb-6">
+                {/* Generate FreeBonde Button  */}
+                <button
+                    onClick={generateFreeBonde}
+                    className="flex items-center gap-2 mb-4 bg-amber-600 hover:bg-amber-700 px-4 py-2 rounded text-white font-semibold cursor-pointer"
+                >
+                    Generate FreeBonde Token (TEST)
                 </button>
-                {/* Place the Update Plants Info button here */}
+                {/* Regenerate Plant Data Button */}
                 <button
                     onClick={handleGenerate}
-                    className={`flex items-center gap-2 mt-2 bg-green-600 hover:bg-green-700
-                         px-4 py-2 rounded text-white font-semibold cursor-pointer`}
+                    className="flex items-center gap-2 bg-green-600 hover:bg-green-700 px-4 py-2 rounded text-white font-semibold cursor-pointer"
+                    disabled={loading}
                 >
-                    Update Plants Info
+                    {loading ? "Generating..." : "Regenerate Plant Data"}
                 </button>
-                {loading && <p style={{ color: "#888" }}>Loading...</p>}
-                {/* Center all cards */}
-                {!loading && plantList.length > 0 && (
-                    <div
-                        style={{
-                            display: "flex",
-                            flexWrap: "wrap",
-                            gap: "24px",
-                            justifyContent: "center",
-                            margin: "24px 0",
-                        }}
-                    >
-                        {plantList.map((plant, idx) => {
-                            // Get nickname
-                            let nickname = "";
-                            if (publicKey) {
-                                nickname =
-                                    localStorage.getItem(
-                                        `nickname_${publicKey}`
-                                    ) || `N/A`;
-                            } else {
-                                nickname = "N/A";
-                            }
-                            return (
-                                <div
-                                    key={plant.plant_id}
-                                    style={{
-                                        margin: "8px",
-                                        minWidth: "260px",
-                                        display: "flex",
-                                        flexDirection: "column",
-                                        alignItems: "center",
-                                        boxShadow:
-                                            "0 4px 16px rgba(0,0,0,0.13), 0 1.5px 4px rgba(0,0,0,0.09)",
-                                        borderRadius: "12px",
-                                        background: "#fff",
-                                    }}
-                                >
-                                    {/* Only show image */}
-                                    <img
-                                        src={plant.data.plant_image}
-                                        alt={plant.plant_name}
-                                        style={{
-                                            width: "180px",
-                                            height: "180px",
-                                            objectFit: "cover",
-                                            borderRadius: "8px",
-                                            marginTop: "16px",
-                                        }}
-                                    />
-                                    {/* New field info */}
-                                    <div
-                                        style={{
-                                            marginTop: "8px",
-                                            background: "#f8f8f8",
-                                            borderRadius: "8px",
-                                            padding: "10px",
-                                            textAlign: "center",
-                                            width: "100%",
-                                        }}
-                                    >
-                                        <div>
-                                            <strong>Grower:</strong> {nickname}
-                                        </div>
-                                        <div>
-                                            <strong>City:</strong> {plant.city}
-                                        </div>
-                                        <div>
-                                            <strong>Grow Days:</strong>{" "}
-                                            {plant.grow_days}
-                                        </div>
-                                        <div>
-                                            <strong>Plant Name:</strong>{" "}
-                                            {plant.plant_name}
-                                        </div>
-                                        <div>
-                                            <strong>EC:</strong> {plant.data.ec}
-                                        </div>
-                                        <div>
-                                            <strong>pH:</strong> {plant.data.ph}
-                                        </div>
-                                        <div>
-                                            <strong>Temperature:</strong>{" "}
-                                            {plant.data.temperature}°C
-                                        </div>
+            </div>
+            {loading && <p className="text-gray-600 text-center">Loading...</p>}
+            <div className="flex flex-wrap justify-center gap-6">
+                {plantList.length === 0 && !loading && (
+                    <p className="text-gray-600">No plant data. Please click the button above to generate.</p>
+                )}
+                {plantList.map((plant, idx) => {
+                    let nickname = "";
+                    if (publicKey) {
+                        nickname =
+                            localStorage.getItem(
+                                `nickname_${publicKey}`
+                            ) || `N/A`;
+                    } else {
+                        nickname = "N/A";
+                    }
+                    return (
+                        <div key={plant.plant_id} className="w-72">
+                            <div className="bg-white rounded-lg shadow-lg overflow-hidden flex flex-col w-full max-w-xs mx-auto">
+                                <div className="bg-[#17a589] text-white text-center py-2 font-semibold uppercase">
+                                    {plant.stage.replace("_", " ")}
+                                </div>
+                                <img
+                                    src={plant.data.plant_image}
+                                    alt={plant.plant_name}
+                                    className="w-full h-48 object-cover"
+                                />
+                                {/*  */}
+                                <div className="p-4 text-gray-800 flex flex-col gap-1">
+                                    <div>
+                                        <span className="font-semibold">Grower:</span> {nickname}
                                     </div>
-                                    {/* Center the button */}
-                                    <div
-                                        style={{
-                                            width: "100%",
-                                            display: "flex",
-                                            justifyContent: "center",
-                                            // marginTop: "8px",
-                                            marginBottom: "16px",
-                                        }}
-                                    >
-                                        <button
-                                            className="relative inline-block mt-4 px-6 py-3 border cursor-pointer border-neonGreen rounded-md uppercase font-bold tracking-widest 
-  bg-yellow-400 hover:shadow-[0_0_15px_#39ff14] transition-all duration-300 
-  before:absolute before:inset-0 before:rounded-md before:border before:border-neonGreen before:animate-pulse before:opacity-30 before:pointer-events-none"
-                                            onClick={() => mintNFT(plant)}
-                                            hidden={!wallet.connected}
-                                        >
-                                            Create Plant NFT
-                                        </button>
+                                    <div>
+                                        <span className="font-semibold">City:</span> {plant.city}
+                                    </div>
+                                    <div>
+                                        <span className="font-semibold">Grow Days:</span> {plant.grow_days}
+                                    </div>
+                                    <div>
+                                        <span className="font-semibold">Plant Name:</span> {plant.plant_name}
+                                    </div>
+                                    <div>
+                                        <span className="font-semibold">EC:</span> {plant.data.ec}
+                                    </div>
+                                    <div>
+                                        <span className="font-semibold">pH:</span> {plant.data.ph}
+                                    </div>
+                                    <div>
+                                        <span className="font-semibold">Temperature:</span> {plant.data.temperature}°C
                                     </div>
                                 </div>
-                            );
-                        })}
-                    </div>
-                )}
-                {!wallet.connected && (
-                    <p className="connect-wallet-message">
-                        Please connect your wallet first to mint the NFT.
-                    </p>
-                )}
+                                <button
+                                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded m-4"
+                                    onClick={() => mintNFT(plant)}
+                                    disabled={loading}
+                                >
+                                    {loading ? "Minting..." : "Mint as NFT"}
+                                </button>
+                            </div>
+                        </div>
+                    );
+                })}
             </div>
         </div>
     );
