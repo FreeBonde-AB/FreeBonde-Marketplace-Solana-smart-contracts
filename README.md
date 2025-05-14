@@ -67,14 +67,33 @@ This project is licensed under the MIT License.
 
 ---
 
+
+## Important Notes for Visitors
+
+- **Network:**  
+  This project is configured for Solana Devnet by default. Please do not use real assets or mainnet wallets for testing.
+
+- **Wallet Support:**  
+  The dApp currently supports Phantom Wallet. Make sure you have it installed and connected before interacting with the app.
+
+- **NFT Minting:**  
+  When minting an NFT, the NFT name follows a specific format for parsing plant and user data. Please do not modify the minting logic unless you understand the naming convention.
+
+- **Marketplace Transactions:**  
+  NFT sales require both the buyer and the seller to sign the transaction. The seller must be online and connected with their wallet to approve the sale.
+
+- **No Multi-Wallet Support:**  
+  The dApp does not support simultaneous multi-wallet signatures. Only the currently connected wallet can sign transactions.
+
+- **Testing:**  
+  All features should be tested on Devnet. If you encounter errors related to wallet signatures or transaction failures, ensure you are using the correct wallet and network.
+
+- **Security:**  
+  Do not use this project with valuable assets. This is a test/demo project and has not been audited.
+
+- **Contribution:**  
+  Contributions are welcome! Please fork the repository and submit a pull request.
+
+
 **Happy Minting! 🌿**
-
-## Recent Updates
-
-- Unified NFT name format for consistent frontend/backend parsing.
-- Improved mintNFT logic: even if metadata fetch fails, successful mints are always reported as successful to the user.
-- MyNFTsPage now sorts NFTs by mint time (newest first).
-- Codebase is now more standardized and international-friendly.
-
-
 
