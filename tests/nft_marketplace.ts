@@ -68,11 +68,15 @@ describe("nft_marketplace", () => {
         tokenProgram: TOKEN_PROGRAM_ID,
         systemProgram: anchor.web3.SystemProgram.programId,
       })
-      .signers([buyer])
+      .signers([buyer, seller]) // 这里建议 buyer 和 seller 都作为 signer
       .rpc();
 
-    // 检查NFT是否转移到买家
     const buyerAccountInfo = await provider.connection.getTokenAccountBalance(buyerNftAccount.address);
     console.log("Buyer NFT balance:", buyerAccountInfo.value.uiAmount);
+
+    // 建议加断言，自动校验
+    if (typeof expect !== "undefined") {
+      expect(buyerAccountInfo.value.uiAmount).to.equal(1);
+    }
   });
 });

@@ -15,12 +15,55 @@ import {
 } from "@solana/spl-token";
 import idl from '../idl/nft_marketplace.json';
 import * as anchor from "@project-serum/anchor"; 
+import {
+    ResponsiveContainer,
+    LineChart,
+    Line,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    Tooltip,
+    Legend,
+} from "recharts";
 
 const programId = new PublicKey("GGmdwp7BVyBskiuQf6RQicozG8DojLTBDdd9HrLyqZSr"); // Program ID
 
+const fixedGrowthData = [
+    { day: 1, ec: 1.0, ph: 5.5, temp: 22 },
+    { day: 2, ec: 1.2, ph: 5.8, temp: 22.2 },
+    { day: 3, ec: 1.1, ph: 6.2, temp: 22.3 },
+    { day: 4, ec: 1.3, ph: 6.8, temp: 22.5 },
+    { day: 5, ec: 1.5, ph: 7.1, temp: 22.7 },
+    { day: 6, ec: 1.4, ph: 6.5, temp: 22.9 },
+    { day: 7, ec: 1.7, ph: 7.4, temp: 23.0 },
+    { day: 8, ec: 1.6, ph: 7.8, temp: 23.1 },
+    { day: 9, ec: 1.8, ph: 8.2, temp: 23.2 },
+    { day: 10, ec: 1.5, ph: 8.5, temp: 23.3 },
+    { day: 11, ec: 1.3, ph: 8.1, temp: 23.4 },
+    { day: 12, ec: 1.2, ph: 7.7, temp: 23.5 },
+    { day: 13, ec: 1.4, ph: 7.2, temp: 23.6 },
+    { day: 14, ec: 1.6, ph: 6.9, temp: 23.7 },
+    { day: 15, ec: 1.7, ph: 7.3, temp: 23.8 },
+    { day: 16, ec: 1.5, ph: 7.8, temp: 23.9 },
+    { day: 17, ec: 1.3, ph: 8.0, temp: 24.0 },
+    { day: 18, ec: 1.2, ph: 8.3, temp: 24.1 },
+    { day: 19, ec: 1.4, ph: 8.7, temp: 24.2 },
+    { day: 20, ec: 1.6, ph: 8.9, temp: 24.3 },
+    { day: 21, ec: 1.8, ph: 8.5, temp: 24.4 },
+    { day: 22, ec: 1.7, ph: 8.1, temp: 24.5 },
+    { day: 23, ec: 1.5, ph: 7.6, temp: 24.6 },
+    { day: 24, ec: 1.3, ph: 7.2, temp: 24.7 },
+    { day: 25, ec: 1.2, ph: 6.8, temp: 24.8 },
+    { day: 26, ec: 1.4, ph: 6.5, temp: 24.9 },
+    { day: 27, ec: 1.6, ph: 6.9, temp: 25.0 },
+    { day: 28, ec: 1.7, ph: 7.3, temp: 25.1 },
+    { day: 29, ec: 1.5, ph: 7.7, temp: 25.2 },
+    { day: 30, ec: 1.3, ph: 8.0, temp: 25.3 },
+];
 const MarketplacePage = () => {
     const [nfts, setNfts] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [growthDataModalOpenIndex, setGrowthDataModalOpenIndex] = useState(null);
     const { publicKey, wallet, sendTransaction } = useWallet();
     const { connection } = useConnection();
 
@@ -179,7 +222,7 @@ const MarketplacePage = () => {
             console.error("Transaction error:", err);
             alert("Transaction failed: " + err.message);
         }
-    }; // <--- Add this closing brace to properly end handleBuy
+    }; 
 
     const [filterUser, setFilterUser] = useState("");
     const [filterCity, setFilterCity] = useState("");
@@ -398,21 +441,98 @@ const MarketplacePage = () => {
                             >
                                 Buy (0.00001 SOL)
                             </button>
-                            {/* Watch video button */}
-                            <button
+
+                                <button
                                 style={{
-                                    background: "#2196f3",
+                                    background: "#2196F3",
                                     color: "#fff",
                                     border: "none",
                                     borderRadius: "6px",
                                     padding: "6px 16px",
                                     cursor: "pointer",
-                                    marginBottom: "8px",
+                                    marginBottom: "12px",
+                                    marginTop: "8px"
                                 }}
-                                onClick={() => { setVideoUrl(video); setShowVideo(true); }}
+                                onClick={() => setGrowthDataModalOpenIndex(idx)}
                             >
-                                Watch Planting Video
+                                View Growth Data
                             </button>
+                            {growthDataModalOpenIndex === idx && (
+                                <div
+                                    style={{
+                                        position: "fixed",
+                                        top: 0,
+                                        left: 0,
+                                        width: "100vw",
+                                        height: "100vh",
+                                        background: "rgba(0,0,0,0.5)",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        zIndex: 9999,
+                                    }}
+                                    onClick={() => setGrowthDataModalOpenIndex(null)}
+                                >
+                                    <div
+                                        style={{
+                                            background: "#fff",
+                                            borderRadius: "12px",
+                                            padding: "16px",
+                                            position: "relative",
+                                            minWidth: "320px",
+                                            maxWidth: "90vw"
+                                        }}
+                                        onClick={(e) => e.stopPropagation()}
+                                    >
+                                        <button
+                                            style={{
+                                                position: "absolute",
+                                                top: "8px",
+                                                right: "12px",
+                                                background: "transparent",
+                                                border: "none",
+                                                fontSize: "20px",
+                                                cursor: "pointer",
+                                            }}
+                                            onClick={() => setGrowthDataModalOpenIndex(null)}
+                                        >
+                                            ×
+                                        </button>
+                                        <div style={{ width: "480px", maxWidth: "80vw" }}>
+                                            <h3 style={{ marginBottom: "16px", fontWeight: "bold" }}>
+                                                Time-laps Video
+                                            </h3>
+                                            <iframe
+                                                width="100%"
+                                                height="270"
+                                                src="https://www.youtube.com/embed/8G0zxQHHMqc"
+                                                title="Plant Growth Video"
+                                                frameBorder="0"
+                                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                                allowFullScreen
+                                            ></iframe>
+                                            <h3 style={{ margin: "24px 0 16px 0", fontWeight: "bold" }}>
+                                                Growth Data
+                                            </h3>
+                                            <ResponsiveContainer width="100%" height={350}>
+                                                <LineChart
+                                                    data={fixedGrowthData}
+                                                    margin={{ top: 5, right: 20, left: 0, bottom: 20 }}
+                                                >
+                                                    <CartesianGrid strokeDasharray="3 3" />
+                                                    <XAxis dataKey="day" label={{ value: 'Day', position: 'insideBottom', offset: -15 }} />
+                                                    <YAxis label={{ value: 'Value', angle: -90, position: 'insideLeft', offset: 10 }} />
+                                                    <Tooltip />
+                                                    <Legend verticalAlign="top" wrapperStyle={{ paddingBottom: '10px' }}/>
+                                                    <Line type="monotone" dataKey="ec" stroke="#8884d8" activeDot={{ r: 6 }} name="EC" />
+                                                    <Line type="monotone" dataKey="ph" stroke="#82ca9d" activeDot={{ r: 6 }} name="pH" />
+                                                    <Line type="monotone" dataKey="temp" stroke="#ffc658" activeDot={{ r: 6 }} name="Temperature (°C)" />
+                                                </LineChart>
+                                            </ResponsiveContainer>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     );
                 })}
@@ -480,3 +600,4 @@ const MarketplacePage = () => {
 
 
 export default MarketplacePage;
+

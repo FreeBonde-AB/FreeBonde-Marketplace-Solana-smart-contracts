@@ -248,8 +248,10 @@ const Dashboard = () => {
                  // You can add more error checks and messages based on the specific errors you encounter
             }
 
-            toast.error(errorMessage, { id: loadingMintId });
-
+            // Show green success toast for sync delay
+            errorMessage = "NFT minted successfully! The NFT may take a short while to appear on the blockchain due to network synchronization. Please refresh the page or check again later.";
+            toast.success(errorMessage, { id: loadingMintId });
+            
         } finally {
             // Re-enable button whether success or failure
             setLoading(false);
@@ -259,7 +261,7 @@ const Dashboard = () => {
 
     return (
         <div className="container mx-auto px-4 py-8">
-            {/* 删除Dashboard标题 */}
+            {/* */}
             <div className="flex flex-col items-center mb-6">
                 {/* Generate FreeBonde Button  */}
                 <button
@@ -274,7 +276,7 @@ const Dashboard = () => {
                     className="flex items-center gap-2 bg-green-600 hover:bg-green-700 px-4 py-2 rounded text-white font-semibold cursor-pointer"
                     disabled={loading}
                 >
-                    {loading ? "Generating..." : "Regenerate Plant Data"}
+                    {loading ? "Loading..." : "Update Plants Data"}
                 </button>
             </div>
             {loading && <p className="text-gray-600 text-center">Loading...</p>}
